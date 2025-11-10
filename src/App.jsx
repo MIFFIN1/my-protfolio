@@ -1,0 +1,971 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Menu, X, Github, Linkedin, Mail, ExternalLink, ArrowRight, Code, Cpu, Layers, Hash, Database, Terminal, BookOpen, Award, Moon, Sun, Compass, Brain, Globe, Server, FilterX, Sparkles, Command, ChevronRight, Ruler, Boxes } from 'lucide-react';
+
+
+// --- CUSTOM ICONS & BADGES ---
+const TechBadge = ({ tech, isActiveFilter, isBlueprint }) => (
+    <span className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono uppercase tracking-wider border transition-all duration-300
+        ${isBlueprint
+            ? 'bg-[#0a192f] text-cyan-400 border-cyan-500 border-dashed'
+            : isActiveFilter
+                ? 'text-amber-900 bg-amber-400 border-amber-500 font-bold shadow-[0_0_15px_rgba(251,191,36,0.5)]'
+                : 'text-cyan-300 border-cyan-900/50 bg-cyan-950/30'
+        }`}>
+        {tech}
+    </span>
+);
+
+// --- MOCK DATA ---
+const PERSONAL_INFO = {
+  name: "IBRAHIM MALIK",
+  title: "ML RESEARCHER & FULL STACK ENGINEER",
+  shortBio: "Bridging the gap between advanced AI research and robust software engineering. I build scalable, intelligent systems with the intricate structural integrity of traditional geometric design.",
+  about: "My approach to computer science is rooted in deep analytical thinking and structured problem-solving, much like the principles of complex geometric patterns. Currently pursuing my MS in CS with a focus on ML and AI, I blend rigorous academic research in neuro-symbolic AI and medical imaging with practical, full-stack development experience.",
+  email: "901ibrahimmalik@gmail.com",
+  github: "https://github.com/MIFFIN1",
+  linkedin: "https://www.linkedin.com/in/901ibrahimmalik/",
+  resume: "/Ibrahim Resume_1pg.pdf"
+};
+
+// Mapped technologies to graph node IDs for filtering
+const TECH_MAP = {
+    "Python": "py", "PyTorch": "torch", "Medical Imaging": "cv", "3D CNNs": "AI",
+    "JavaScript": "js", "Node.js": "node", "Neo4j (Cypher)": "neo4j", "React": "react", "GraphRAG": "rag",
+    "LLMs": "llm", "Neuro-Symbolic AI": "AI", "Medical AI": "AI", "Computer Vision": "cv",
+    "Research": "AI", "Entrepreneurship": "CORE", "Mechanics": "CORE", "Management": "CORE"
+};
+
+// LOGO DATA FOR TICKER
+const TECH_STACK = [
+    { name: "Python", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
+    { name: "PyTorch", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" },
+    { name: "TensorFlow", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg" },
+    { name: "JavaScript", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
+    { name: "React", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
+    { name: "Node.js", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
+    { name: "C++", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" },
+    { name: "Neo4j", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/neo4j/neo4j-original.svg" },
+    { name: "PostgreSQL", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
+    { name: "Docker", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" },
+    { name: "Git", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" },
+    { name: "Linux", url: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" },
+];
+
+const EXPERIENCE = [
+  {
+    id: 1,
+    role: "ML RESEARCH INTERN",
+    company: "ST. JUDE CHILDREN'S HOSPITAL",
+    period: "SEP 2025 - PRESENT",
+    description: "Developing deep learning models (CNNs, 3D CNNs) for pediatric brain tumor classification using pre-surgical MRI data. Collaborating with clinicians on tumor segmentation and optimizing model performance.",
+    technologies: ["Python", "PyTorch", "Medical Imaging", "3D CNNs"]
+  },
+  {
+    id: 2,
+    role: "FULL STACK INTERN",
+    company: "AUTOZONE",
+    period: "JUN 2025 - AUG 2025",
+    description: "Built a real-time store intelligence portal to visualize network topology. Integrated AI APIs using GraphRAG for natural language generation and utilized graph databases (Cypher) for complex data modeling.",
+    technologies: ["JavaScript", "Node.js", "Neo4j (Cypher)", "React", "GraphRAG"]
+  },
+  {
+    id: 3,
+    role: "RESEARCH ASSISTANT",
+    company: "UNIVERSITY OF MEMPHIS",
+    period: "MAY 2025 - PRESENT",
+    description: "Conducting Neuro-Symbolic AI research under Dr. Deepak Venugopal. Evaluating reasoning capabilities of LLMs using the GSM8K dataset to understand their internal logical mechanisms.",
+    technologies: ["Python", "LLMs", "Neuro-Symbolic AI"]
+  }
+];
+
+const PROJECTS = [
+  {
+    id: 1,
+    title: "TUMOR_CLASSIFIER",
+    description: "AI system using 3D CNNs to classify pediatric posterior fossa tumors from MRI scans, aiding pre-surgical planning.",
+    tech: ["PyTorch", "Medical AI", "Computer Vision"],
+    links: { github: "#", live: null },
+    type: "Medical AI",
+    imageUrl: "https://images.unsplash.com/photo-1555431189-0fabf2667795?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3"
+  },
+  {
+    id: 2,
+    title: "NEURO_SYMBOLIC_EVAL",
+    description: "Research framework to benchmark and interpret the complex arithmetic and logical reasoning capabilities of Large Language Models.",
+    tech: ["Python", "LLMs", "Research"],
+    links: { github: "#", live: null },
+    type: "AI Research",
+    imageUrl: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3"
+  },
+  {
+    id: 3,
+    title: "RIDE_REVIVAL",
+    description: "Founded and operate a bike restoration business. Not just code—I believe in hands-on mechanical craftsmanship and community empowerment.",
+    tech: ["Entrepreneurship", "Mechanics", "Management"],
+    links: { github: null, live: "#" },
+    type: "Entrepreneurship",
+    imageUrl: "https://images.unsplash.com/photo-1485965120184-e224f7a1d7f6?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3"
+  },
+];
+
+const GRAPH_DATA = {
+    nodes: [
+        { id: 'CORE', label: 'Ibrahim', type: 'hub', x: 300, y: 250, vx: 0, vy: 0 },
+        { id: 'AI', label: 'AI / ML', type: 'subhub', x: 150, y: 150, vx: 0, vy: 0 },
+        { id: 'FS', label: 'Full Stack', type: 'subhub', x: 450, y: 150, vx: 0, vy: 0 },
+        { id: 'DATA', label: 'Data Eng', type: 'subhub', x: 300, y: 400, vx: 0, vy: 0 },
+        { id: 'py', label: 'Python', type: 'lang', x: 100, y: 100, vx: 0, vy: 0 },
+        { id: 'js', label: 'JavaScript', type: 'lang', x: 500, y: 100, vx: 0, vy: 0 },
+        { id: 'cpp', label: 'C++', type: 'lang', x: 200, y: 80, vx: 0, vy: 0 },
+        { id: 'sql', label: 'SQL', type: 'lang', x: 350, y: 450, vx: 0, vy: 0 },
+        { id: 'cypher', label: 'Cypher', type: 'lang', x: 250, y: 450, vx: 0, vy: 0 },
+        { id: 'torch', label: 'PyTorch', type: 'tool', x: 50, y: 180, vx: 0, vy: 0 },
+        { id: 'tf', label: 'TensorFlow', type: 'tool', x: 100, y: 220, vx: 0, vy: 0 },
+        { id: 'llm', label: 'LLMs', type: 'tool', x: 180, y: 200, vx: 0, vy: 0 },
+        { id: 'react', label: 'React', type: 'tool', x: 550, y: 180, vx: 0, vy: 0 },
+        { id: 'node', label: 'Node.js', type: 'tool', x: 500, y: 220, vx: 0, vy: 0 },
+        { id: 'neo4j', label: 'Neo4j', type: 'tool', x: 200, y: 400, vx: 0, vy: 0 },
+        { id: 'rag', label: 'GraphRAG', type: 'tool', x: 150, y: 350, vx: 0, vy: 0 },
+        { id: 'cv', label: 'OpenCV', type: 'tool', x: 80, y: 280, vx: 0, vy: 0 },
+    ],
+    links: [
+        { source: 'CORE', target: 'AI' }, { source: 'CORE', target: 'FS' }, { source: 'CORE', target: 'DATA' },
+        { source: 'AI', target: 'py' }, { source: 'AI', target: 'cpp' }, { source: 'AI', target: 'torch' }, { source: 'AI', target: 'tf' }, { source: 'AI', target: 'llm' }, { source: 'AI', target: 'cv' },
+        { source: 'FS', target: 'js' }, { source: 'FS', target: 'react' }, { source: 'FS', target: 'node' },
+        { source: 'DATA', target: 'sql' }, { source: 'DATA', target: 'cypher' }, { source: 'DATA', target: 'neo4j' },
+        { source: 'py', target: 'torch' }, { source: 'py', target: 'tf' }, { source: 'py', target: 'cv' },
+        { source: 'js', target: 'react' }, { source: 'js', target: 'node' },
+        { source: 'neo4j', target: 'cypher' }, { source: 'neo4j', target: 'rag' }, { source: 'AI', target: 'rag' }
+    ]
+};
+
+
+const InteractiveBackground = ({ isBlueprint }) => {
+    const canvasRef = useRef(null);
+    const mouseRef = useRef({ x: 0, y: 0 });
+
+    useEffect(() => {
+        if (isBlueprint) return; // Don't run heavy animation in blueprint mode
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+        let time = 0;
+
+        const resize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        window.addEventListener('resize', resize);
+        resize();
+
+        const handleMouseMove = (e) => {
+            mouseRef.current = { x: e.clientX, y: e.clientY };
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+
+        const points = [];
+        const spacing = 80;
+        for (let x = -spacing; x < window.innerWidth + spacing; x += spacing) {
+            for (let y = -spacing; y < window.innerHeight + spacing; y += spacing) {
+                const xOffset = (y / spacing) % 2 === 0 ? 0 : spacing / 2;
+                points.push({
+                    baseX: x + xOffset,
+                    baseY: y,
+                    x: x + xOffset,
+                    y: y,
+                });
+            }
+        }
+
+        const render = () => {
+            ctx.fillStyle = '#050a14';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            time += 0.005;
+
+            points.forEach(p => {
+                const dx = p.baseX - mouseRef.current.x;
+                const dy = p.baseY - mouseRef.current.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const maxDist = 300;
+                const pull = Math.max(0, 1 - dist / maxDist);
+                p.x = p.baseX + Math.sin(time + p.baseY * 0.01) * 10 + (dx * pull * 0.1);
+                p.y = p.baseY + Math.cos(time + p.baseX * 0.01) * 10 + (dy * pull * 0.1);
+            });
+
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.08)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let i = 0; i < points.length; i++) {
+                const p1 = points[i];
+                for (let j = i + 1; j < points.length; j++) {
+                    const p2 = points[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = dx * dx + dy * dy;
+                    if (dist < spacing * spacing * 1.5) {
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                    }
+                }
+            }
+            ctx.stroke();
+
+            points.forEach(p => {
+                const dx = p.x - mouseRef.current.x;
+                const dy = p.y - mouseRef.current.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const highlight = Math.max(0, 1 - dist / 200);
+                ctx.fillStyle = `rgba(251, 191, 36, ${0.1 + highlight * 0.5})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 1 + highlight * 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            const gradient = ctx.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, 0,
+                canvas.width / 2, canvas.height / 2, canvas.width
+            );
+            gradient.addColorStop(0, 'rgba(5, 10, 20, 0)');
+            gradient.addColorStop(1, 'rgba(5, 10, 20, 0.8)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            animationFrameId = requestAnimationFrame(render);
+        };
+        render();
+
+        return () => {
+            window.removeEventListener('resize', resize);
+            window.removeEventListener('mousemove', handleMouseMove);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [isBlueprint]);
+
+    if (isBlueprint) return null;
+    return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />;
+};
+
+const NoiseOverlay = ({ isBlueprint }) => {
+    if (isBlueprint) return null;
+    return (
+        <div className="fixed inset-0 z-[1] pointer-events-none opacity-[0.03] mix-blend-overlay"
+             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
+        </div>
+    );
+};
+
+const BlueprintGrid = ({ isBlueprint }) => {
+    if (!isBlueprint) return null;
+    return (
+        <div className="fixed inset-0 z-0 pointer-events-none"
+             style={{
+                 backgroundColor: '#0a192f',
+                 backgroundImage: 'linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px)',
+                 backgroundSize: '30px 30px'
+             }}>
+        </div>
+    )
+}
+
+const SkillConstellation = ({ onNodeClick, activeFilter, isBlueprint }) => {
+    const [nodes, setNodes] = useState(GRAPH_DATA.nodes.map(n => ({...n, vx: 0, vy: 0})));
+    const svgRef = useRef(null);
+    const [draggingId, setDraggingId] = useState(null);
+    const mouseStartRef = useRef({ x: 0, y: 0 });
+
+    useEffect(() => {
+        let animationFrameId;
+        const simulate = () => {
+            setNodes(prevNodes => {
+                const newNodes = prevNodes.map(n => ({...n}));
+                const REPULSION = 800;
+                const SPRING_LEN = 100;
+                const SPRING_STRENGTH = 0.02;
+                const GRAVITY = 0.005;
+                const DAMPING = 0.85;
+                const MAX_VELOCITY = 5;
+
+                for (let i = 0; i < newNodes.length; i++) {
+                    let fx = 0, fy = 0;
+                    for (let j = 0; j < newNodes.length; j++) {
+                        if (i === j) continue;
+                        const dx = newNodes[i].x - newNodes[j].x;
+                        const dy = newNodes[i].y - newNodes[j].y;
+                        const distSq = dx * dx + dy * dy || 1;
+                        const force = REPULSION / Math.sqrt(distSq);
+                        fx += (dx / Math.sqrt(distSq)) * force;
+                        fy += (dy / Math.sqrt(distSq)) * force;
+                    }
+                    fx += (300 - newNodes[i].x) * GRAVITY;
+                    fy += (250 - newNodes[i].y) * GRAVITY;
+                    if (newNodes[i].id !== draggingId) {
+                        newNodes[i].vx += fx * 0.01;
+                        newNodes[i].vy += fy * 0.01;
+                    }
+                }
+                GRAPH_DATA.links.forEach(link => {
+                    const sIdx = newNodes.findIndex(n => n.id === link.source);
+                    const tIdx = newNodes.findIndex(n => n.id === link.target);
+                    if (sIdx !== -1 && tIdx !== -1) {
+                        const source = newNodes[sIdx];
+                        const target = newNodes[tIdx];
+                        const dx = target.x - source.x;
+                        const dy = target.y - source.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                        const force = (dist - SPRING_LEN) * SPRING_STRENGTH;
+                        const fx = (dx / dist) * force;
+                        const fy = (dy / dist) * force;
+                        if (source.id !== draggingId) { source.vx += fx; source.vy += fy; }
+                        if (target.id !== draggingId) { target.vx -= fx; target.vy -= fy; }
+                    }
+                });
+                newNodes.forEach(node => {
+                    if (node.id !== draggingId) {
+                        node.vx = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, node.vx));
+                        node.vy = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, node.vy));
+                        node.x += node.vx;
+                        node.y += node.vy;
+                        node.vx *= DAMPING;
+                        node.vy *= DAMPING;
+                    }
+                    node.x = Math.max(20, Math.min(580, node.x));
+                    node.y = Math.max(20, Math.min(480, node.y));
+                });
+                return newNodes;
+            });
+            animationFrameId = requestAnimationFrame(simulate);
+        };
+        simulate();
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [draggingId]);
+
+    const handleMouseDown = (e, id) => {
+        e.preventDefault();
+        setDraggingId(id);
+        mouseStartRef.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleMouseMove = (e) => {
+        if (!draggingId || !svgRef.current) return;
+        const CTM = svgRef.current.getScreenCTM();
+        const x = (e.clientX - CTM.e) / CTM.a;
+        const y = (e.clientY - CTM.f) / CTM.d;
+        setNodes(prev => prev.map(n => n.id === draggingId ? { ...n, x, y, vx: 0, vy: 0 } : n));
+    };
+
+    const handleMouseUp = (e, node) => {
+        if (draggingId && node) {
+            const dist = Math.sqrt(Math.pow(e.clientX - mouseStartRef.current.x, 2) + Math.pow(e.clientY - mouseStartRef.current.y, 2));
+            if (dist < 20) {
+                onNodeClick(node.id === activeFilter ? null : node.id);
+            }
+        }
+        setDraggingId(null);
+    };
+
+    return (
+        <div className={`w-full h-[500px] rounded-xl overflow-hidden relative group select-none z-20 transition-all duration-500
+            ${isBlueprint ? 'bg-[#0a192f] border-2 border-dashed border-cyan-800' : 'bg-[#050a14]/50 backdrop-blur-md border border-cyan-900/30'}`}>
+
+             <div className={`absolute top-4 right-4 text-xs font-mono flex items-center gap-1 pointer-events-none select-none
+                 ${isBlueprint ? 'text-cyan-500' : 'text-cyan-500/50'}`}>
+                <Compass size={12} className={isBlueprint ? '' : 'animate-spin-slow'}/> {isBlueprint ? 'SCHEMATIC VIEW' : 'INTERACTIVE MODEL'}
+            </div>
+            {activeFilter && (
+                 <div className="absolute top-4 left-4 z-10">
+                    <button onClick={() => onNodeClick(null)} className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs font-mono border transition-all cursor-pointer z-50
+                        ${isBlueprint ? 'bg-[#0a192f] text-cyan-400 border-cyan-500 border-dashed hover:bg-cyan-900/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30'}`}>
+                        <FilterX size={14} /> Clear: <span className="font-bold ml-1">{GRAPH_DATA.nodes.find(n => n.id === activeFilter)?.label}</span>
+                    </button>
+                </div>
+            )}
+            <svg
+                ref={svgRef}
+                viewBox="0 0 600 500"
+                className="w-full h-full cursor-grab active:cursor-grabbing"
+                onMouseMove={handleMouseMove}
+                onMouseUp={() => setDraggingId(null)}
+                onMouseLeave={() => setDraggingId(null)}
+            >
+                {GRAPH_DATA.links.map((link, i) => {
+                    const source = nodes.find(n => n.id === link.source);
+                    const target = nodes.find(n => n.id === link.target);
+                    if (!source || !target) return null;
+                    const isActiveLink = activeFilter && (link.source === activeFilter || link.target === activeFilter);
+                    // Blueprint Mode Link Styling
+                    const stroke = isBlueprint ? (isActiveLink ? '#38bdf8' : '#1e293b') : (isActiveLink ? "#fbbf24" : "rgba(6, 182, 212, 0.2)");
+                    const opacity = isBlueprint ? (isActiveLink ? 1 : 0.5) : (activeFilter && !isActiveLink ? 0.1 : 0.4);
+
+                    return <line key={i} x1={source.x} y1={source.y} x2={target.x} y2={target.y}
+                        stroke={stroke}
+                        strokeWidth={isActiveLink ? "2" : "1"}
+                        opacity={opacity}
+                        strokeDasharray={isBlueprint ? "4 4" : "0"}
+                        className="transition-all duration-300"
+                    />;
+                })}
+                {nodes.map((node) => {
+                     const isActive = node.id === activeFilter;
+                     const isDimmed = activeFilter && !isActive;
+                     const isConnected = activeFilter && GRAPH_DATA.links.some(l =>
+                         (l.source === activeFilter && l.target === node.id) ||
+                         (l.target === activeFilter && l.source === node.id)
+                     );
+                    const r = node.type === 'hub' ? 35 : node.type === 'subhub' ? 25 : 18;
+
+                    // Blueprint Mode Node Styling
+                    const fill = isBlueprint ? '#0a192f' : (isActive ? "#fbbf24" : "#050a14");
+                    const stroke = isBlueprint ? (isActive ? '#38bdf8' : '#0e7490') : (isActive ? "#fbbf24" : node.type === 'hub' ? '#fbbf24' : node.type === 'subhub' ? '#06b6d4' : '#0e7490');
+                    const strokeWidth = isBlueprint ? 1 : (isActive ? 3 : 2);
+
+                    return (
+                    <g key={node.id} transform={`translate(${node.x},${node.y})`}
+                       onMouseDown={(e) => handleMouseDown(e, node.id)}
+                       onMouseUp={(e) => handleMouseUp(e, node)}
+                       className={`transition-opacity duration-300 ${isDimmed && !isConnected ? 'opacity-20' : 'opacity-100'}`}>
+                        <circle r={r + 30} fill="transparent" className="cursor-grab active:cursor-grabbing" />
+                        <circle
+                            r={r}
+                            fill={fill}
+                            stroke={stroke}
+                            strokeWidth={strokeWidth}
+                            strokeDasharray={isBlueprint ? "3 2" : "0"}
+                            className="transition-all duration-300"
+                        />
+                         {(node.type === 'hub' || node.type === 'subhub' || isActive || isConnected) ? (
+                             <text textAnchor="middle" dy=".3em" className={`text-[11px] font-mono pointer-events-none uppercase tracking-wider transition-all duration-300 font-bold ${isBlueprint ? 'fill-cyan-400' : (isActive ? 'fill-amber-950' : 'fill-cyan-50')}`}>
+                                 {node.label}
+                             </text>
+                         ) : (
+                              <text textAnchor="middle" y={r + 12} className={`text-[10px] font-mono pointer-events-none font-medium tracking-tight ${isBlueprint ? 'fill-cyan-700' : 'fill-cyan-300'}`}>
+                                {node.label}
+                             </text>
+                         )}
+                    </g>
+                )})}
+            </svg>
+        </div>
+    );
+};
+
+const TechTicker = ({ isBlueprint }) => {
+    return (
+        <div className={`relative w-full overflow-hidden border-y py-6 z-20 transition-all duration-500
+            ${isBlueprint ? 'bg-[#0a192f] border-cyan-900 border-dashed' : 'bg-[#050a14]/50 backdrop-blur-md border-cyan-900/30'}`}>
+
+            <div className={`absolute inset-y-0 left-0 w-32 bg-gradient-to-r z-10 transition-colors duration-500
+                ${isBlueprint ? 'from-[#0a192f] to-transparent' : 'from-[#050a14] to-transparent'}`}></div>
+            <div className={`absolute inset-y-0 right-0 w-32 bg-gradient-to-l z-10 transition-colors duration-500
+                 ${isBlueprint ? 'from-[#0a192f] to-transparent' : 'from-[#050a14] to-transparent'}`}></div>
+
+            <div className="flex animate-marquee whitespace-nowrap">
+                {[...TECH_STACK, ...TECH_STACK].map((tech, i) => (
+                    <div key={i} className="inline-flex flex-col items-center justify-center mx-8 group">
+                        <img
+                            src={tech.url}
+                            alt={tech.name}
+                            className={`h-12 w-12 mb-3 transition-all duration-300
+                                ${isBlueprint ? 'opacity-40 grayscale sepia contrast-150' : 'opacity-50 grayscale group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-110'}`}
+                        />
+                        <span className={`text-[10px] font-mono uppercase tracking-wider transition-colors
+                            ${isBlueprint ? 'text-cyan-700' : 'text-cyan-500/50 group-hover:text-cyan-300'}`}>
+                            {tech.name}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const LunarPhaseWidget = ({ isBlueprint }) => {
+    const [phaseName, setPhaseName] = useState('');
+    useEffect(() => {
+        const phases = [{ name: "New Moon", icon: Moon }, { name: "Waxing Crescent", icon: Moon }, { name: "First Quarter", icon: Moon }, { name: "Waxing Gibbous", icon: Moon }, { name: "Full Moon", icon: Sun }, { name: "Waning Gibbous", icon: Moon }, { name: "Last Quarter", icon: Moon }, { name: "Waning Crescent", icon: Moon }];
+        setPhaseName(phases[new Date().getDate() % 8]?.name || "Waxing Gibbous");
+    }, []);
+    return (
+        <div className={`hidden lg:flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-mono transition-all duration-500
+            ${isBlueprint ? 'bg-[#0a192f] border-cyan-900 border-dashed text-cyan-600' : 'bg-[#050a14]/80 backdrop-blur-md border-cyan-900/30 text-cyan-300/60'}`}>
+             <Moon size={14} className={isBlueprint ? 'text-cyan-700' : 'text-amber-400/80'} /> <span className="uppercase tracking-widest text-[10px]">{phaseName}</span>
+        </div>
+    );
+};
+
+const DigitalAstrolabe = ({ isBlueprint }) => {
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    useEffect(() => {
+        const handleMouseMove = (e) => { setMousePos({ x: (e.clientX / window.innerWidth) * 2 - 1, y: (e.clientY / window.innerHeight) * 2 - 1 }); };
+        window.addEventListener('mousemove', handleMouseMove); return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    if (isBlueprint) {
+        // Blueprint version of Astrolabe - simplified, static wireframe
+         return (
+            <div className="relative w-full h-full max-w-md z-20 flex items-center justify-center opacity-50">
+                <div className="w-[400px] h-[400px] border-2 border-dashed border-cyan-800 rounded-full flex items-center justify-center">
+                     <div className="w-[300px] h-[300px] border border-dotted border-cyan-700 rounded-full flex items-center justify-center">
+                         <div className="w-[150px] h-[150px] border border-cyan-900 rounded-full"></div>
+                     </div>
+                     <div className="absolute w-full h-px bg-cyan-900/50"></div>
+                     <div className="absolute h-full w-px bg-cyan-900/50"></div>
+                </div>
+                 <span className="absolute bottom-0 font-mono text-[10px] text-cyan-700">FIG 1.1: ASTROLABE SCHEMATIC</span>
+            </div>
+        )
+    }
+
+    return (
+        <div className="relative w-full h-full max-w-md z-20" style={{ transform: `perspective(1000px) rotateY(${mousePos.x * 5}deg) rotateX(${mousePos.y * -5}deg)`, transition: 'transform 0.1s ease-out' }}>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] border-[2px] border-cyan-900/30 rounded-full"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] border border-dashed border-cyan-500/20 rounded-full animate-[spin_120s_linear_infinite]"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] animate-[spin_80s_linear_infinite_reverse]">
+                 <svg viewBox="0 0 380 380" className="w-full h-full opacity-30">
+                    <circle cx="190" cy="190" r="188" fill="none" stroke="#fbbf24" strokeWidth="0.5" strokeDasharray="2 4"/><path d="M190 2 A 188 188 0 0 1 190 378" fill="none" stroke="#0ea5e9" strokeWidth="0.5" /><path d="M2 190 A 188 188 0 0 1 378 190" fill="none" stroke="#0ea5e9" strokeWidth="0.5" /><circle cx="190" cy="100" r="60" fill="none" stroke="#fbbf24" strokeWidth="1" opacity="0.5" />
+                    {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => (<line key={i} x1="190" y1="190" x2="190" y2="10" transform={`rotate(${deg} 190 190)`} stroke="#0ea5e9" strokeWidth="1" strokeLinecap="round" opacity="0.3"></line>))}
+                 </svg>
+            </div>
+             <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[450px] z-10 drop-shadow-[0_0_15px_rgba(14,165,233,0.3)]" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40 600V300C40 300 40 100 200 100C360 100 360 300 360 300V600" stroke="url(#grad1)" strokeWidth="2" className="animate-pulse-slow"/>
+                <path d="M60 600V320C60 320 60 150 200 150C340 150 340 320 340 320V600" stroke="url(#grad2)" strokeWidth="1" strokeDasharray="4 4" opacity="0.6"/>
+                <defs><linearGradient id="grad1" x1="200" y1="100" x2="200" y2="600" gradientUnits="userSpaceOnUse"><stop stopColor="#fbbf24" /><stop offset="1" stopColor="#0ea5e9" stopOpacity="0.1" /></linearGradient><linearGradient id="grad2" x1="200" y1="150" x2="200" y2="600" gradientUnits="userSpaceOnUse"><stop stopColor="#06b6d4" /><stop offset="1" stopColor="#06b6d4" stopOpacity="0" /></linearGradient></defs>
+            </svg>
+        </div>
+    );
+};
+
+const TechDivider = ({ isBlueprint }) => (
+    <div className={`flex items-center justify-center py-12 z-10 relative transition-opacity duration-500 ${isBlueprint ? 'opacity-20' : 'opacity-30'}`}>
+        <div className={`h-px w-24 ${isBlueprint ? 'bg-cyan-800 border-t border-dashed border-cyan-800' : 'bg-cyan-500/50'}`}></div>
+        <div className={`mx-4 text-xs tracking-[0.3em] font-mono ${isBlueprint ? 'text-cyan-800' : 'text-amber-400/50'}`}>◈ ◇ ◈</div>
+        <div className={`h-px w-24 ${isBlueprint ? 'bg-cyan-800 border-t border-dashed border-cyan-800' : 'bg-cyan-500/50'}`}></div>
+    </div>
+);
+
+const NeoBtn = ({ children, href, primary = false, onClick, isBlueprint }) => {
+    const base = "relative inline-flex items-center justify-center px-6 py-3 font-mono text-sm tracking-wider uppercase transition-all duration-300 group overflow-hidden cursor-pointer z-20";
+    // Blueprint vs Standard Colors
+    const colors = isBlueprint
+        ? "bg-[#0a192f] text-cyan-500 border border-dashed border-cyan-800 hover:border-cyan-400 hover:text-cyan-400"
+        : primary
+            ? "bg-amber-500/10 text-amber-400 border border-amber-500/50 hover:bg-amber-500/20 hover:border-amber-400"
+            : "bg-cyan-900/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/10 hover:border-cyan-400";
+
+    const Tag = href ? 'a' : 'button';
+    return (
+        <Tag href={href} onClick={onClick} className={`${base} ${colors}`}>
+            {!isBlueprint && <span className={`absolute inset-0 w-0 ${primary ? 'bg-amber-400/10' : 'bg-cyan-400/10'} transition-all duration-300 ease-out group-hover:w-full`}></span>}
+            <span className="relative z-10 flex items-center gap-2">{children}</span>
+            {!isBlueprint && <><span className="absolute top-0 left-0 w-1 h-1 border-t border-l border-current opacity-50"></span><span className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-current opacity-50"></span></>}
+        </Tag>
+    );
+};
+
+function Navbar({ isBlueprint, toggleBlueprint }) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll); return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navBg = isBlueprint
+    ? (isScrolled ? 'bg-[#0a192f]/95 border-b border-dashed border-cyan-900' : 'bg-transparent')
+    : (isScrolled ? 'bg-[#050a14]/80 backdrop-blur-md border-b border-cyan-900/30' : 'bg-transparent');
+
+  return (
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${navBg} ${isScrolled ? 'py-3' : 'py-6'}`}>
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-2 text-xl transition-colors duration-500 ${isBlueprint ? 'font-mono text-cyan-400' : 'font-decorative text-amber-100'}`}>
+                <Hash className={isBlueprint ? "text-cyan-600" : "text-amber-400"} size={20} />
+                <span>IBRAHIM.DEV</span>
+            </div>
+            <LunarPhaseWidget isBlueprint={isBlueprint} />
+        </div>
+        <div className="hidden md:flex items-center gap-8">
+            {['About', 'Experience', 'Projects', 'Contact'].map((item) => (
+                <a key={item} href={`#${item.toLowerCase()}`} className={`text-sm font-mono uppercase tracking-widest transition-colors ${isBlueprint ? 'text-cyan-700 hover:text-cyan-400' : 'text-cyan-200/70 hover:text-amber-400'}`}>
+                    <span className={`${isBlueprint ? 'text-cyan-900' : 'text-cyan-500'} mr-1`}>//</span>{item}
+                </a>
+            ))}
+             <NeoBtn href={PERSONAL_INFO.resume} isBlueprint={isBlueprint}>Resume_</NeoBtn>
+             {/* BLUEPRINT TOGGLE */}
+             <button onClick={toggleBlueprint} className={`ml-4 p-2 rounded-md border transition-all duration-300 ${isBlueprint ? 'bg-cyan-900/20 text-cyan-400 border-cyan-500' : 'text-cyan-500/50 border-transparent hover:text-cyan-400'}`} title="Toggle Blueprint Mode">
+                 {isBlueprint ? <Ruler size={18} /> : <Boxes size={18} />}
+             </button>
+        </div>
+        <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-amber-100">{isOpen ? <X /> : <Menu />}</button>
+      </div>
+      {isOpen && ( <div className="md:hidden absolute top-full left-0 w-full bg-[#050a14] border-b border-cyan-900/30 p-6 flex flex-col space-y-4">{['About', 'Experience', 'Projects', 'Contact'].map((link) => (<a key={link} href={`#${link.toLowerCase()}`} onClick={() => setIsOpen(false)} className="font-mono text-lg text-cyan-100"><span className="text-amber-500 mr-2">{'>'}</span> {link}</a>))}</div>)}
+    </nav>
+  );
+}
+
+function Hero({ isBlueprint }) {
+  return (
+    <section className="min-h-screen flex items-center relative px-6 pt-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center relative z-10">
+            <div className="lg:col-span-7 space-y-6">
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border font-mono text-xs tracking-widest uppercase transition-all duration-500
+                    ${isBlueprint ? 'border-cyan-800 bg-[#0a192f] text-cyan-500' : 'border-cyan-500/30 bg-cyan-500/5 text-cyan-300'}`}>
+                    <Cpu size={14} /> Machine Learning Scientist
+                </div>
+                <h1 className={`text-5xl md:text-7xl lg:text-8xl leading-none transition-all duration-500 ${isBlueprint ? 'font-mono text-cyan-500' : 'font-decorative text-amber-50'}`}>
+                    IBRAHIM<br />
+                    <span className={`${isBlueprint ? 'text-cyan-700' : 'text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-600'}`}>MALIK</span>
+                </h1>
+                <p className={`text-lg md:text-xl max-w-2xl leading-relaxed transition-colors duration-500 ${isBlueprint ? 'font-mono text-cyan-600' : 'font-light text-cyan-100/70'}`}>{PERSONAL_INFO.shortBio}</p>
+                <div className="flex flex-wrap gap-4 pt-6">
+                    <NeoBtn href="#projects" primary={!isBlueprint} isBlueprint={isBlueprint}>View Research <ArrowRight className="ml-2" size={16}/></NeoBtn>
+                    <div className="flex gap-4 items-center px-6">
+                        <a href={PERSONAL_INFO.github} className={`transition-colors ${isBlueprint ? 'text-cyan-800 hover:text-cyan-500' : 'text-cyan-400/60 hover:text-amber-400'}`}><Github/></a>
+                        <a href={PERSONAL_INFO.linkedin} className={`transition-colors ${isBlueprint ? 'text-cyan-800 hover:text-cyan-500' : 'text-cyan-400/60 hover:text-amber-400'}`}><Linkedin/></a>
+                    </div>
+                </div>
+            </div>
+            <div className="lg:col-span-5 relative h-[500px] flex justify-center items-center"><DigitalAstrolabe isBlueprint={isBlueprint} /></div>
+        </div>
+    </section>
+  );
+}
+
+function About({ onFilterChange, activeFilter, isBlueprint }) {
+  return (
+    <section id="about" className="py-24 px-6 relative z-10">
+        <div className="max-w-7xl mx-auto">
+             <div className="grid lg:grid-cols-2 gap-16 items-center mb-16">
+                <div>
+                    <h2 className={`text-4xl mb-8 transition-all duration-500 ${isBlueprint ? 'font-mono text-cyan-500' : 'font-decorative text-amber-50'}`}>
+                        <span className={`${isBlueprint ? 'text-cyan-700' : 'text-amber-400'} text-2xl mr-2`}>01.</span> THE ALGORITHM
+                    </h2>
+                    <div className={`space-y-6 leading-relaxed transition-colors duration-500 ${isBlueprint ? 'font-mono text-cyan-600 text-sm' : 'text-cyan-100/80 font-light'}`}>
+                        <p className={`text-lg pl-6 border-l-2 ${isBlueprint ? 'border-dashed border-cyan-800' : 'border-amber-500/50'}`}>{PERSONAL_INFO.about}</p>
+                        <div className={`flex gap-4 text-sm font-mono pt-4 ${isBlueprint ? 'text-cyan-500' : 'text-amber-400/80'}`}>
+                            <span className="flex items-center gap-2"><BookOpen size={16}/> MS CS '26</span>
+                            <span className="flex items-center gap-2"><Award size={16}/> GPA 3.95</span>
+                        </div>
+                        <p className={`text-xs font-mono pt-8 flex items-center ${isBlueprint ? 'text-cyan-700' : 'text-cyan-500/70'}`}>
+                             <Compass size={14} className={`inline mr-2 ${isBlueprint ? '' : 'animate-spin-slow text-amber-400'}`}/>
+                             INTERACTIVE MODULE: Drag nodes to explore relations. Click to filter work below.
+                        </p>
+                    </div>
+                </div>
+                <SkillConstellation onNodeClick={onFilterChange} activeFilter={activeFilter} isBlueprint={isBlueprint} />
+            </div>
+            <TechTicker isBlueprint={isBlueprint} />
+        </div>
+    </section>
+  );
+}
+
+function Experience({ filter, onClear, isBlueprint }) {
+    const getFilteredExperience = () => {
+        if (!filter) return EXPERIENCE;
+        if (filter === 'CORE') return EXPERIENCE;
+        return EXPERIENCE.map(job => ({
+            ...job,
+            isRelevant: job.technologies.some(tech => TECH_MAP[tech] === filter)
+        }));
+    };
+    const displayExperience = getFilteredExperience();
+    const hasActiveFilter = Boolean(filter && filter !== 'CORE');
+
+    return (
+        <section id="experience" className={`py-24 px-6 relative z-10 transition-colors duration-500 ${isBlueprint ? '' : 'bg-[#030711]/50'}`}>
+            <div className="max-w-5xl mx-auto"> {/* Increased width for side-by-side layout */}
+                <div className="grid lg:grid-cols-[1fr_300px] gap-12">
+                    {/* MAIN CONTENT */}
+                    <div>
+                         <div className="flex flex-col md:flex-row justify-between items-center mb-16">
+                             <h2 className={`text-4xl transition-all duration-500 ${isBlueprint ? 'font-mono text-cyan-500' : 'font-decorative text-amber-50'}`}>
+                                 <span className={`${isBlueprint ? 'text-cyan-700' : 'text-cyan-500'} text-2xl mr-2`}>02.</span> EXECUTION LOG
+                             </h2>
+                             {hasActiveFilter && (
+                                 <button onClick={onClear} className={`mt-4 md:mt-0 flex items-center gap-2 px-4 py-2 text-xs font-mono rounded-full transition-all border
+                                    ${isBlueprint ? 'text-cyan-500 border-cyan-800 border-dashed hover:bg-cyan-900/20' : 'text-amber-300 bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'}`}>
+                                    <FilterX size={14}/> CLEAR FILTER
+                                 </button>
+                             )}
+                        </div>
+                        <div className="space-y-12">
+                            {displayExperience.map((job) => {
+                                const isDimmed = hasActiveFilter && !job.isRelevant;
+                                // Blueprint styles
+                                const containerClass = isBlueprint ? `pl-8 border-l border-dashed transition-all ${isDimmed ? 'border-cyan-900 opacity-50' : 'border-cyan-600'}` : `relative pl-8 border-l transition-all duration-500 ${isDimmed ? 'border-cyan-900/20 opacity-40 blur-[1px]' : 'border-cyan-500/50 opacity-100'}`;
+                                const dotClass = isBlueprint ? `absolute left-0 top-0 -translate-x-[5px] w-[9px] h-[9px] bg-[#0a192f] border border-cyan-600` : `absolute left-0 top-0 -translate-x-[5px] w-[9px] h-[9px] bg-[#050a14] border rotate-45 transition-colors duration-500 ${isDimmed ? 'border-cyan-900' : 'border-amber-500'}`;
+                                const roleClass = isBlueprint ? `text-xl font-mono text-cyan-400` : `text-2xl font-decorative transition-colors duration-300 ${isDimmed ? 'text-cyan-100/50' : 'text-cyan-50'}`;
+
+                                return (
+                                    <div key={job.id} className={`relative ${containerClass}`}>
+                                        <div className={dotClass}></div>
+                                        <div className="group">
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                                                <h3 className={roleClass}>{job.role}</h3>
+                                                <span className={`font-mono text-xs ${isBlueprint ? 'text-cyan-700' : 'text-amber-400/70'}`}>{job.period}</span>
+                                            </div>
+                                            <div className={`font-mono text-sm mb-4 uppercase tracking-wider ${isBlueprint ? 'text-cyan-600' : 'text-cyan-500'}`}>@ {job.company}</div>
+                                            <p className={`mb-6 leading-relaxed ${isBlueprint ? 'font-mono text-cyan-800 text-sm' : 'text-cyan-200/70 font-light'}`}>{job.description}</p>
+                                            <div className="flex flex-wrap gap-3">
+                                                {job.technologies.map(tech => (
+                                                    <TechBadge key={tech} tech={tech} isActiveFilter={TECH_MAP[tech] === filter} isBlueprint={isBlueprint} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+
+const NeuralProjectCard = ({ project, isDimmed, filter, isBlueprint }) => {
+    const NEURAL_STYLE_SVG = `data:image/svg+xml,%3Csvg width='100%25' height='100%25' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='neural-net' patternUnits='userSpaceOnUse' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='2' fill='%23fbbf24' opacity='0.5'/%3E%3Cpath d='M0 0L20 20M20 0L0 20' stroke='%2306b6d4' stroke-width='0.5' opacity='0.3'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23neural-net)'/%3E%3C/svg%3E`;
+
+    // Blueprint specific styles
+    const containerClass = isBlueprint
+        ? `group relative bg-[#0a192f] border border-dashed transition-all duration-500 flex flex-col h-[550px] ${isDimmed ? 'border-cyan-900 opacity-50' : 'border-cyan-700 hover:border-cyan-400'}`
+        : `group relative bg-cyan-950/20 border transition-all duration-500 overflow-hidden backdrop-blur-sm flex flex-col h-[550px] ${isDimmed ? 'border-cyan-900/30 opacity-40 scale-95 blur-[1px]' : 'border-cyan-800/50 hover:border-amber-500/50 opacity-100 scale-100'}`;
+
+    return (
+        <div className={containerClass}>
+            {/* IMAGE CONTAINER */}
+            <div className={`relative h-72 overflow-hidden border-b ${isBlueprint ? 'border-cyan-900 border-dashed bg-[#050a14] flex items-center justify-center' : 'border-cyan-900/50'}`}>
+                {isBlueprint ? (
+                    // Blueprint Placeholder View
+                    <div className="text-center p-6">
+                        <Database size={48} className="mx-auto text-cyan-800 mb-4 opacity-50" />
+                        <div className="font-mono text-xs text-cyan-800 uppercase tracking-widest">SCHEMATIC PLACEHOLDER</div>
+                        <div className="font-mono text-[10px] text-cyan-900 mt-2">{project.type.toUpperCase()}_V1.0</div>
+                    </div>
+                ) : (
+                    // Standard Neural View
+                    <>
+                        <div className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                             style={{ backgroundImage: `url(${project.imageUrl})` }} />
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 mix-blend-hard-light pointer-events-none"
+                             style={{ backgroundImage: `url("${NEURAL_STYLE_SVG}")`, backgroundSize: '50px' }}>
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#050a14] via-cyan-900/50 to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-500"></div>
+                        <div className="absolute top-0 right-0 w-16 h-16 opacity-50 pointer-events-none transition-opacity group-hover:opacity-100 z-10">
+                            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" className="text-amber-500"><path d="M0 0 H100 V100" strokeWidth="2"/><path d="M20 20 H100 V100" strokeWidth="1" opacity="0.5"/></svg>
+                        </div>
+                         <div className="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] font-mono text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <Sparkles size={12}/> NEURAL VIEW
+                        </div>
+                    </>
+                )}
+            </div>
+
+            <div className="p-8 flex-grow relative z-10 flex flex-col">
+                <div className={`font-mono text-xs mb-4 tracking-widest uppercase ${isBlueprint ? 'text-cyan-700' : 'text-amber-400/60'}`}>{project.type}</div>
+                <h3 className={`text-2xl mb-4 leading-tight transition-colors ${isBlueprint ? 'font-mono text-cyan-400' : 'font-decorative text-cyan-50 group-hover:text-amber-100'}`}>{project.title}</h3>
+                <p className={`text-sm leading-relaxed flex-grow ${isBlueprint ? 'font-mono text-cyan-800' : 'text-cyan-200/70 font-light'}`}>{project.description}</p>
+            </div>
+            <div className="p-8 pt-0 mt-auto relative z-10">
+                <div className="flex flex-wrap gap-2 mb-6">
+                    {project.tech.map(t => (
+                        <TechBadge key={t} tech={t} isActiveFilter={TECH_MAP[t] === filter} isBlueprint={isBlueprint} />
+                    ))}
+                </div>
+                <div className={`flex items-center gap-4 border-t pt-6 ${isBlueprint ? 'border-cyan-900 border-dashed' : 'border-cyan-900/50'}`}>
+                    {project.links.github && <a href={project.links.github} className={`transition-colors ${isBlueprint ? 'text-cyan-700 hover:text-cyan-400' : 'text-cyan-400 hover:text-amber-400'}`}><Github size={18}/></a>}
+                    {project.links.live && <a href={project.links.live} className={`transition-colors ${isBlueprint ? 'text-cyan-700 hover:text-cyan-400' : 'text-cyan-400 hover:text-amber-400'}`}><ExternalLink size={18}/></a>}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+function Projects({ filter, onClear, isBlueprint }) {
+    const getFilteredProjects = () => {
+        if (!filter) return PROJECTS;
+        if (filter === 'CORE') return PROJECTS;
+        return PROJECTS.map(p => ({
+            ...p,
+            isRelevant: p.tech.some(t => TECH_MAP[t] === filter) || TECH_MAP[p.type] === filter
+        }));
+    };
+    const displayProjects = getFilteredProjects();
+    const hasActiveFilter = Boolean(filter && filter !== 'CORE');
+
+    return (
+        <section id="projects" className="py-24 px-6 relative z-10">
+            <div className="max-w-6xl mx-auto">
+                 <div className="flex flex-col md:flex-row justify-between items-center mb-16">
+                    <h2 className={`text-4xl transition-all duration-500 ${isBlueprint ? 'font-mono text-cyan-500' : 'font-decorative text-amber-50'}`}>
+                        <span className={`${isBlueprint ? 'text-cyan-700' : 'text-amber-400'} text-2xl mr-2`}>03.</span> SYSTEM OUTPUTS
+                    </h2>
+                    {hasActiveFilter && (
+                         <button onClick={onClear} className={`mt-4 md:mt-0 flex items-center gap-2 px-4 py-2 text-xs font-mono rounded-full transition-all border
+                            ${isBlueprint ? 'text-cyan-500 border-cyan-800 border-dashed hover:bg-cyan-900/20' : 'text-amber-300 bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'}`}>
+                            <FilterX size={14}/> CLEAR FILTER
+                         </button>
+                     )}
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {displayProjects.map((project) => (
+                         <NeuralProjectCard
+                             key={project.id}
+                             project={project}
+                             isDimmed={hasActiveFilter && !project.isRelevant}
+                             filter={filter}
+                             isBlueprint={isBlueprint}
+                         />
+                    ))}
+                </div>
+            </div>
+        </section>
+    )
+}
+
+// --- INTERACTIVE CLI TERMINAL ---
+const TERMINAL_COMMANDS = {
+    'help': "Available commands:\n  > about    : View detailed background info\n  > skills   : Run technical proficiency analysis\n  > contact  : Decrypt communication channels\n  > clear    : Clear terminal screen\n  > exit     : Close terminal session",
+    'about': "[[ LOADED: ACADEMIC_HISTORY.json ]]\n\n> MS Computer Science, University of Memphis (Expected 2026)\n  Focus: Neuro-Symbolic AI, Deep Learning\n  GPA: 3.95\n\n> BS Computer Science, University of Memphis (2024)\n  Minor: Mathematics\n  Honors: Summa Cum Laude",
+    'skills': "[[ RUNNING: SKILL_ANALYSIS.exe ]]\n\n> LANGUAGES\n  Python      [██████████] 95%\n  JavaScript  [████████░░] 85%\n  C++         [███████░░░] 75%\n  SQL/Cypher  [█████████░] 90%\n\n> FRAMEWORKS\n  PyTorch     [█████████░] 90%\n  React       [████████░░] 85%\n  Node.js     [███████░░░] 75%\n  Neo4j       [████████░░] 80%",
+    'contact': "[[ DECRYPTING SECURE CHANNELS... ]]\n\n> EMAIL    : 901ibrahimmalik@gmail.com\n> LINKEDIN : linkedin.com/in/901ibrahimmalik\n> GITHUB   : github.com/miffin1\n\n> STATUS   : CHANNELS OPEN",
+    'sudo': "nice try. admin privileges restricted.",
+    'hello': "Hello world. System online.",
+}
+
+const RetroTerminal = ({ isOpen, onClose }) => {
+    const [inputStr, setInputStr] = useState('');
+    const [history, setHistory] = useState([
+        { type: 'output', content: "NEURAL LINK [Version 1.0.4]\n(c) 2025 Ibrahim Malik. All rights reserved.\n\nInitializing secure connection...\nConnection established.\nType 'help' for available commands." }
+    ]);
+    const endRef = useRef(null);
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        if (endRef.current) endRef.current.scrollIntoView({ behavior: "smooth" });
+    }, [history]);
+
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            setTimeout(() => inputRef.current.focus(), 100);
+        }
+    }, [isOpen]);
+
+    const handleCommand = (cmd) => {
+        const cleanCmd = cmd.trim().toLowerCase();
+        let output = `Command not found: ${cleanCmd}. Type 'help' for list.`;
+
+        if (cleanCmd === 'clear') {
+            setHistory([]);
+            return;
+        }
+        if (cleanCmd === 'exit') {
+            onClose();
+            return;
+        }
+
+        if (TERMINAL_COMMANDS[cleanCmd]) {
+            output = TERMINAL_COMMANDS[cleanCmd];
+        } else if (cleanCmd === '') {
+            output = '';
+        }
+
+        setHistory(prev => [
+            ...prev,
+            { type: 'input', content: cmd },
+            ...(output ? [{ type: 'output', content: output }] : [])
+        ]);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleCommand(inputStr);
+            setInputStr('');
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050a14]/80 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="absolute inset-0" onClick={onClose}></div>
+            <div className="relative w-full max-w-2xl bg-[#0c0c0c] border border-green-900/50 rounded-lg shadow-[0_0_50px_rgba(0,255,0,0.1)] overflow-hidden flex flex-col h-[60vh] min-h-[400px] font-mono text-sm z-10 animate-in zoom-in-95 duration-300">
+                <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] opacity-20 z-20"></div>
+                <div className="flex items-center justify-between px-4 py-2 bg-[#1a1a1a] border-b border-green-900/30">
+                    <div className="flex items-center gap-2 text-green-500/70 text-xs">
+                        <Terminal size={14} /> NEURAL_LINK_v1.0.4
+                    </div>
+                    <button onClick={onClose} className="text-green-500/50 hover:text-green-400 transition-colors">
+                        <X size={16} />
+                    </button>
+                </div>
+                <div className="flex-grow p-4 overflow-y-auto text-green-400 selection:bg-green-500/30 selection:text-green-100 font-medium" onClick={() => inputRef.current?.focus()}>
+                     {history.map((entry, i) => (
+                        <div key={i} className={`mb-2 ${entry.type === 'input' ? 'opacity-60' : 'whitespace-pre-wrap leading-relaxed'}`}>
+                            {entry.type === 'input' ? `> ${entry.content}` : entry.content}
+                        </div>
+                    ))}
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="text-green-600">{'>'}</span>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={inputStr}
+                            onChange={(e) => setInputStr(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="flex-grow bg-transparent border-none outline-none text-green-400 caret-green-500"
+                            autoFocus
+                            spellCheck="false"
+                        />
+                    </div>
+                    <div ref={endRef} />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default function App() {
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [isBlueprint, setIsBlueprint] = useState(false);
+  const clearFilter = () => setActiveFilter(null);
+
+  return (
+    <div className={`min-h-screen overflow-hidden transition-colors duration-500 ${isBlueprint ? 'bg-[#0a192f] text-cyan-900' : 'bg-[#050a14] text-slate-300'}`}>
+       <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=JetBrains+Mono:wght@400&family=Outfit:wght@300;400;500&display=swap');
+        body { font-family: 'Outfit', sans-serif; }
+        .font-decorative { font-family: 'Cinzel Decorative', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .animate-spin-slow { animation: spin 10s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { animation: marquee 40s linear infinite; }
+        .animate-marquee:hover { animation-play-state: paused; }
+      `}} />
+      <NoiseOverlay isBlueprint={isBlueprint} />
+      <InteractiveBackground isBlueprint={isBlueprint} />
+      <BlueprintGrid isBlueprint={isBlueprint} />
+      <Navbar isBlueprint={isBlueprint} toggleBlueprint={() => setIsBlueprint(!isBlueprint)} />
+      <Hero isBlueprint={isBlueprint} />
+      <About onFilterChange={setActiveFilter} activeFilter={activeFilter} isBlueprint={isBlueprint} />
+      <TechDivider isBlueprint={isBlueprint} />
+      <Experience filter={activeFilter} onClear={clearFilter} isBlueprint={isBlueprint} />
+      <TechDivider isBlueprint={isBlueprint} />
+      <Projects filter={activeFilter} onClear={clearFilter} isBlueprint={isBlueprint} />
+
+      <RetroTerminal isOpen={isTerminalOpen} onClose={() => setIsTerminalOpen(false)} />
+
+      <button
+          onClick={() => setIsTerminalOpen(true)}
+          className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg group
+            ${isBlueprint ? 'bg-[#0a192f] border-2 border-dashed border-cyan-500 text-cyan-500 hover:bg-cyan-900/20' : 'bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-900 hover:text-amber-400 hover:border-amber-500/50 backdrop-blur-md'}`}
+          title="Open Neural Link Terminal"
+      >
+        <Terminal size={24} />
+        {!isBlueprint && <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full animate-pulse"></span>}
+      </button>
+    </div>
+  );
+}
