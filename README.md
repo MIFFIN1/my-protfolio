@@ -1,5 +1,4 @@
 # My Website
 
-[Click with caution!!](miffin1.github.io/my-protfolio/)
-
+<a href="miffin1.github.io/my-protfolio/" target="_blank">Click with caution!!d!</a>
 
